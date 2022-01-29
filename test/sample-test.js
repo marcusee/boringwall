@@ -1,19 +1,71 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe("Greeter", function () {
-  it("Should return the new greeting once it's changed", async function () {
-    const Greeter = await ethers.getContractFactory("Greeter");
-    const greeter = await Greeter.deploy("Hello, world!");
-    await greeter.deployed();
+describe("BoringWall", function () {
+  it("Should return correct symbol", async function () {
+    const Bwall = await ethers.getContractFactory("BoringWall");
+    const bwall = await Bwall.deploy();
+    await bwall.deployed();
 
-    expect(await greeter.greet()).to.equal("Hello, world!");
+    const name = await bwall.name();
+    expect(name).equal('Boring Wall');
 
-    const setGreetingTx = await greeter.setGreeting("Hola, mundo!");
+    const symbol = await bwall.symbol();
+    expect(symbol).equal('BWALL');
+  });
 
-    // wait until the transaction is mined
-    await setGreetingTx.wait();
+  describe('Buying a pixel', () => {
+    it("Buys pixel" , async () => {
+      const Bwall = await ethers.getContractFactory("BoringWall");
+      const bwall = await Bwall.deploy();
+      await bwall.deployed();
+  
+      await bwall.buyPixel(0, 12345,  {value : ethers.utils.parseEther("1.0")});
+      const pixel = await bwall.getPixel(0);
+      expect(pixel.color).equal(12345);
+    });
 
-    expect(await greeter.greet()).to.equal("Hola, mundo!");
+
+    it("Stop buy pixel if pixel is purchased" , async () => {
+      const Bwall = await ethers.getContractFactory("BoringWall");
+      const bwall = await Bwall.deploy();
+      await bwall.deployed();
+  
+      await bwall.buyPixel(0, 12345,  {value : ethers.utils.parseEther("1.0")});
+      await bwall.buyPixel
+      await expect( bwall.buyPixel(0, 12345,  {value : ethers.utils.parseEther("1.0")}))
+        .to
+        .be
+        .revertedWith('This pixel is already purchased');
+    });
+  });
+
+  describe("Changing a pixel color", () => {
+    it("Should change a pixel color", async () => {
+      const Bwall = await ethers.getContractFactory("BoringWall");
+      const bwall = await Bwall.deploy();
+      await bwall.deployed();
+      await bwall.buyPixel(5, 55555, {value : ethers.utils.parseEther("1.0")});
+
+      await bwall.changePixelColor(
+        5, 22222, {value : ethers.utils.parseEther("1.0")}
+      );
+
+      const pixel = await bwall.getPixel(5);
+      expect(pixel.color).equal(22222);
+    });
+
+    it("Should not change a pixel color of another owner", async () => {
+      const Bwall = await ethers.getContractFactory("BoringWall");
+      const bwall = await Bwall.deploy();
+      await bwall.deployed();
+      await bwall.buyPixel(5, 55555, {value : ethers.utils.parseEther("1.0")});
+
+      const [owner, addr1] = await ethers.getSigners();
+      await expect(bwall.connect(addr1).changePixelColor(5, 22222, {value : ethers.utils.parseEther("1.0")}))
+        .to
+        .be
+        .revertedWith('You are not the owner of this pixel');
+    });
   });
 });
