@@ -68,4 +68,17 @@ describe("BoringWall", function () {
         .revertedWith('You are not the owner of this pixel');
     });
   });
+
+  describe("Get batch of pixels", () => {
+    it("Should get batch of pixels", async () => {
+      const Bwall = await ethers.getContractFactory("BoringWall");
+      const bwall = await Bwall.deploy();
+      await bwall.deployed();
+
+      const batch1 = await bwall.getBatched(0, 2048);
+      expect(batch1.length).equal(2048);
+      const batch2 = await bwall.getBatched(2048, 2048);
+      expect(batch2.length).equal(2048);
+    });
+  });
 });
