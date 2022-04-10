@@ -53,6 +53,7 @@ contract BoringWall is ERC721Enumerable, Ownable  {
     function changePixelColor (uint256 tokenId, uint24 color) public payable {
         require(msg.value >= _changeFee, "Funds not correct");
         require(ownerOf(tokenId) == msg.sender, 'You are not the owner of this pixel');
+        require(pixels[tokenId].color != color, 'The color is the same');
         pixels[tokenId].color = color;
     }
 
