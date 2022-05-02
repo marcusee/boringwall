@@ -27,6 +27,10 @@ contract BoringWall is ERC721Enumerable, Ownable  {
         baseUrl = newUrl;
     }
 
+    function getPrice() public view  returns (uint256) {
+        return _price;
+    }
+
     // set price incase ether is crazy.
     function setPrice(uint256 _newPrice) public onlyOwner {
       _price = _newPrice;
